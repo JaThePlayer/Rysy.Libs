@@ -1,0 +1,43 @@
+name: Build Rysy libraries
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  buildLuaJit:
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+            - name: windows
+              os: "windows-latest"
+            - name: linux
+              os: "ubuntu-latest"
+            - name: macos_x64
+              os: "macos-14"
+            - name: macos_arm64
+              os: "macos-latest"
+    
+    runs-on: ${{ matrix.target.os }}
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Compile luajit
+      uses: leafo/gh-actions-lua@master
+      with:
+        luaVersion: "luajit"
+    
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: luajit-${{ matrix.target.name }}
+        path: .lua
+        include-hidden-files: true
